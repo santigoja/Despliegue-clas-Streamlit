@@ -1,74 +1,67 @@
-#Cargamos librerías principales
-
+# -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
-#Cargamos el modelo
 import pickle
+import streamlit as st
+
+# Cargar modelo
 filename = 'modelo-class.pkl'
 obj = pickle.load(open(filename, 'rb'))
-modelo = obj[0]
-encoder = obj[1]      # probablemente no lo uses
-variables = obj[2]    # columnas correctas
-scaler = obj[3]
+modelo    = obj[0]
+encoder   = obj[1]
+variables = obj[2]
+scaler    = obj[3]
 
-#Interfaz gráfica
-#Se crea interfaz gráfica con streamlit para captura de los datos
+# Interfaz
+st.title('Predicción para ataque cerebrovascular')
 
-import streamlit as st
-st.title('Predicción para ataque de corazón')
-
-age = st.slider('age', min_value=1, max_value=82, value=20, step=1)
-avg_glucose_level = st.slider('avg_glucose_level', min_value=55.12, max_value=271.74, value=100.0, step=1.0)
-hypertension = st.selectbox('hypertension', ["No",'Yes'])
-heart_disease = st.selectbox('heart_disease', ['No', 'Yes'])
-ever_married = st.selectbox('ever_married', ['Yes', 'No'])
-smoking_status = st.selectbox('smoking_status', ["'never smoked'", "Unknown","'formerly smoked'","smokes"])
-
-#Dataframe
-datos = [[age, avg_glucose_level,hypertension,heart_disease,ever_married, smoking_status]]
-data = pd.DataFrame(datos, columns=['age', 'avg_glucose_level','hypertension','heart_disease','ever_married','smoking_status']) #Dataframe con los mismos nombres de variables
-
+age               = st.slider('Edad', min_value=1, max_value=82, value=20, step=1)
+avg_glucose_level = st.slider('Nivel glucosa prom.', min_value=55.12, max_value=271.74, value=100.0, step=1.0)
+hypertension      = st.selectbox('Hipertensión', ['No', 'Yes'])
+heart_disease     = st.selectbox('Enfermedad cardíaca', ['No', 'Yes'])
+ever_married      = st.selectbox('Alguna vez casado/a', ['Yes', 'No'])
+smoking_status    = st.selectbox('Estado de fumador', [
+    "never smoked", "Unknown", "formerly smoked", "smokes"
+])
 
 if st.button("Predecir"):
 
-    # Crear vector EXACTO con mismas columnas
-    df = pd.DataFrame([[0]*len(variables)], columns=variables)
+    # 1. DataFrame con las 9 columnas del modelo
+    df = pd.DataFrame([[0] * len(variables)], columns=variables)
 
-    # Numéricas
-    df.at[0, 'age'] = age
-    df.at[0, 'avg_glucose_level'] = avg_glucose_level
+    # 2. Escalar solo las 2 numéricas
+    numericas = pd.DataFrame([[age, avg_glucose_level]],
+                             columns=['age', 'avg_glucose_level'])
+    numericas_scaled = scaler.transform(numericas)
 
-    # Binarias
+    df.at[0, 'age']               = numericas_scaled[0][0]
+    df.at[0, 'avg_glucose_level'] = numericas_scaled[0][1]
+
+    # 3. Variables binarias
     if hypertension == 'Yes':
         df.at[0, 'hypertension_Yes'] = 1
-
     if heart_disease == 'Yes':
         df.at[0, 'heart_disease_Yes'] = 1
-
     if ever_married == 'Yes':
         df.at[0, 'ever_married_Yes'] = 1
 
-    # Smoking (usar coincidencia parcial porque tiene comillas raras)
-    for col in variables:
-        if "smoking_status" in col and smoking_status in col:
-            df.at[0, col] = 1
+    # 4. Smoking status
+    smoking_map = {
+        "formerly smoked": "smoking_status_'formerly smoked'",
+        "never smoked":    "smoking_status_'never smoked'",
+        "Unknown":         "smoking_status_Unknown",
+        "smokes":          "smoking_status_smokes",
+    }
+    col_smoking = smoking_map.get(smoking_status)
+    if col_smoking and col_smoking in df.columns:
+        df.at[0, col_smoking] = 1
 
-    # 🔥 CLAVE: asegurar número de features correcto
-    df = df.iloc[:, :scaler.n_features_in_]
+    # 5. Predecir
+    pred = modelo.predict(df)
 
-    # Escalar
-    X_scaled = scaler.transform(df)
-
-    # Predecir
-    pred = modelo.predict(X_scaled)
-
-    # Resultado
     if pred[0] == 1:
         st.error("⚠️ Alto riesgo de ataque cerebrovascular")
     else:
-        st.success("✅ Bajo riesgo")
-# Recordar medida de error del modelo
-st.warning("El modelo no es 100% seguro")
+        st.success("✅ Bajo riesgo de ataque cerebrovascular")
 
+st.warning("⚠️ Este modelo es una herramienta de apoyo y no reemplaza el diagnóstico médico.")
