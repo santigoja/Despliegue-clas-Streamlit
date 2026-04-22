@@ -27,7 +27,7 @@ smoking_status    = st.selectbox('Estado de fumador', [
 if st.button("Predecir"):
 
     # 1. DataFrame con las 9 columnas del modelo
-    df = pd.DataFrame([[0] * len(variables)], columns=variables)
+    df = pd.DataFrame([[0.0] * len(variables)], columns=variables)
 
     # 2. Escalar solo las 2 numéricas
     numericas = pd.DataFrame([[age, avg_glucose_level]],
