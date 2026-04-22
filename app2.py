@@ -20,8 +20,8 @@ import pickle
 filename = 'modelo-class.pkl'
 obj = pickle.load(open(filename, 'rb'))
 modelo = obj[0]
-scaler = obj[1]
-variables = obj[2]
+variables = obj[1]
+scaler = obj[2]
 encoder = obj[3]
 
 #Interfaz gráfica
