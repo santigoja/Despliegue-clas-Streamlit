@@ -66,7 +66,7 @@ if st.button("Predecir"):
         df[col_smoke] = 1
 
     # Escalar
-    X_scaled = scaler.transform(df)
+    X_scaled = scaler.transform(df.values)
 
     # Predecir
     pred = modelo.predict(X_scaled)
