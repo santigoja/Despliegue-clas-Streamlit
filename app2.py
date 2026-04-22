@@ -18,7 +18,11 @@ import matplotlib.pyplot as plt
 #Cargamos el modelo
 import pickle
 filename = 'modelo-class.pkl'
-modelo, min_max_scaler, variables, extra = pickle.load(open(filename, 'rb'))
+obj = pickle.load(open(filename, 'rb'))
+modelo = obj[0]
+scaler = obj[1]
+variables = obj[2]
+encoder = obj[3]
 
 #Interfaz gráfica
 #Se crea interfaz gráfica con streamlit para captura de los datos
@@ -55,7 +59,7 @@ if st.button("Predecir"):
     data = data[variables]
 
     # Escalar
-    X_scaled = min_max_scaler.transform(data)
+    X_scaled = scaler.transform(data)
 
     # Predecir
     pred = modelo.predict(X_scaled)
