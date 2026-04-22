@@ -32,11 +32,39 @@ hypertension = st.selectbox('hypertension', ["No",'Yes'])
 heart_disease = st.selectbox('heart_disease', ['No', 'Yes'])
 ever_married = st.selectbox('ever_married', ['Yes', 'No'])
 smoking_status = st.selectbox('smoking_status', ["'never smoked'", "Unknown","'formerly smoked'","smokes"])
-stroke_ataque_corazon = st.selectbox('stroke_ataque_corazon', ['No', 'Yes'])
 
 #Dataframe
-datos = [[age, avg_glucose_level,hypertension,heart_disease,ever_married, smoking_status, stroke_ataque_corazon]]
-data = pd.DataFrame(datos, columns=['age', 'avg_glucose_level','hypertension','heart_disease','ever_married','smoking_status','stroke_ataque_corazon']) #Dataframe con los mismos nombres de variables
+datos = [[age, avg_glucose_level,hypertension,heart_disease,ever_married, smoking_status]]
+data = pd.DataFrame(datos, columns=['age', 'avg_glucose_level','hypertension','heart_disease','ever_married','smoking_status']) #Dataframe con los mismos nombres de variables
 
+if st.button("Predecir"):
+    
+    # Convertir variables categóricas
+    data['hypertension'] = data['hypertension'].map({'No':0, 'Yes':1})
+    data['heart_disease'] = data['heart_disease'].map({'No':0, 'Yes':1})
+    data['ever_married'] = data['ever_married'].map({'No':0, 'Yes':1})
+
+    # Smoking (ejemplo simple, depende de tu modelo ⚠️)
+    data = pd.get_dummies(data, columns=['smoking_status'])
+
+    # Asegurar columnas (muy importante)
+    for col in variables:
+        if col not in data.columns:
+            data[col] = 0
+
+    data = data[variables]
+
+    # Escalar
+    X_scaled = min_max_scaler.transform(data)
+
+    # Predecir
+    pred = modelo.predict(X_scaled)
+
+    # Mostrar resultado
+    if pred[0] == 1:
+        st.error("⚠️ Alto riesgo de ataque cerebrovascular")
+    else:
+        st.success("✅ Bajo riesgo")
+        
 # Recordar medida de error del modelo
 st.warning("El modelo tiene un error del 11%")
