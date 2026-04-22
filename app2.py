@@ -44,37 +44,34 @@ data = pd.DataFrame(datos, columns=['age', 'avg_glucose_level','hypertension','h
 
 if st.button("Predecir"):
 
-    # Crear copia
-    df = data.copy()
+    df = pd.DataFrame(0, index=[0], columns=variables)
 
-    # 🔹 Convertir binarias a formato esperado (one-hot)
-    df['hypertension_Yes'] = (df['hypertension'] == 'Yes').astype(int)
-    df['heart_disease_Yes'] = (df['heart_disease'] == 'Yes').astype(int)
-    df['ever_married_Yes'] = (df['ever_married'] == 'Yes').astype(int)
+    # Numéricas
+    df['age'] = age
+    df['avg_glucose_level'] = avg_glucose_level
 
-    # 🔹 One-hot de smoking_status EXACTO
-    df['smoking_status_formerly smoked'] = (df['smoking_status'] == 'formerly smoked').astype(int)
-    df['smoking_status_never smoked'] = (df['smoking_status'] == 'never smoked').astype(int)
-    df['smoking_status_Unknown'] = (df['smoking_status'] == 'Unknown').astype(int)
-    df['smoking_status_smokes'] = (df['smoking_status'] == 'smokes').astype(int)
+    # Binarias
+    if hypertension == 'Yes':
+        df['hypertension_Yes'] = 1
 
-    # 🔹 Mantener solo columnas finales
-    df = df[['age', 'avg_glucose_level',
-             'smoking_status_formerly smoked',
-             'smoking_status_never smoked',
-             'smoking_status_Unknown',
-             'smoking_status_smokes',
-             'hypertension_Yes',
-             'heart_disease_Yes',
-             'ever_married_Yes']]
+    if heart_disease == 'Yes':
+        df['heart_disease_Yes'] = 1
 
-    # 🔹 Escalar
+    if ever_married == 'Yes':
+        df['ever_married_Yes'] = 1
+
+    # Smoking (usar EXACTO como está en variables)
+    col_smoke = f"smoking_status_{smoking_status}"
+    if col_smoke in df.columns:
+        df[col_smoke] = 1
+
+    # Escalar
     X_scaled = scaler.transform(df)
 
-    # 🔹 Predecir
+    # Predecir
     pred = modelo.predict(X_scaled)
 
-    # 🔹 Resultado
+    # Resultado
     if pred[0] == 1:
         st.error("⚠️ Alto riesgo de ataque cerebrovascular")
     else:
