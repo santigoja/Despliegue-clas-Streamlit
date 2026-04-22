@@ -44,29 +44,33 @@ data = pd.DataFrame(datos, columns=['age', 'avg_glucose_level','hypertension','h
 
 if st.button("Predecir"):
 
-    df = pd.DataFrame(0, index=[0], columns=variables)
+    # Crear vector EXACTO con mismas columnas
+    df = pd.DataFrame([[0]*len(variables)], columns=variables)
 
     # Numéricas
-    df['age'] = age
-    df['avg_glucose_level'] = avg_glucose_level
+    df.at[0, 'age'] = age
+    df.at[0, 'avg_glucose_level'] = avg_glucose_level
 
     # Binarias
     if hypertension == 'Yes':
-        df['hypertension_Yes'] = 1
+        df.at[0, 'hypertension_Yes'] = 1
 
     if heart_disease == 'Yes':
-        df['heart_disease_Yes'] = 1
+        df.at[0, 'heart_disease_Yes'] = 1
 
     if ever_married == 'Yes':
-        df['ever_married_Yes'] = 1
+        df.at[0, 'ever_married_Yes'] = 1
 
-    # Smoking (usar EXACTO como está en variables)
-    col_smoke = f"smoking_status_{smoking_status}"
-    if col_smoke in df.columns:
-        df[col_smoke] = 1
+    # Smoking (usar coincidencia parcial porque tiene comillas raras)
+    for col in variables:
+        if "smoking_status" in col and smoking_status in col:
+            df.at[0, col] = 1
+
+    # 🔥 CLAVE: asegurar número de features correcto
+    df = df.iloc[:, :scaler.n_features_in_]
 
     # Escalar
-    X_scaled = scaler.transform(df.values)
+    X_scaled = scaler.transform(df)
 
     # Predecir
     pred = modelo.predict(X_scaled)
