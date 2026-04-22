@@ -27,7 +27,7 @@ import streamlit as st
 st.title('Predicción para ataque de corazón')
 
 age = st.slider('age', min_value=1, max_value=82, value=20, step=1)
-avg_glucose_level = st.slider('avg_glucose_level', min_value=55.12, max_value=271.74, value=100, step=1)
+avg_glucose_level = st.slider('avg_glucose_level', min_value=55.12, max_value=271.74, value=100.0, step=1.0)
 hypertension = st.selectbox('hypertension', ["No",'Yes'])
 heart_disease = st.selectbox('heart_disease', ['No', 'Yes'])
 ever_married = st.selectbox('ever_married', ['Yes', 'No'])
