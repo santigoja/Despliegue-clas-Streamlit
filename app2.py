@@ -44,32 +44,37 @@ data = pd.DataFrame(datos, columns=['age', 'avg_glucose_level','hypertension','h
 
 if st.button("Predecir"):
 
-    # Convertir variables binarias
-    data['hypertension'] = data['hypertension'].map({'No':0, 'Yes':1})
-    data['heart_disease'] = data['heart_disease'].map({'No':0, 'Yes':1})
-    data['ever_married'] = data['ever_married'].map({'No':0, 'Yes':1})
+    # Crear copia
+    df = data.copy()
 
-    # One-hot encoding de smoking_status
-    data = pd.get_dummies(data, columns=['smoking_status'])
+    # 🔹 Convertir binarias a formato esperado (one-hot)
+    df['hypertension_Yes'] = (df['hypertension'] == 'Yes').astype(int)
+    df['heart_disease_Yes'] = (df['heart_disease'] == 'Yes').astype(int)
+    df['ever_married_Yes'] = (df['ever_married'] == 'Yes').astype(int)
 
-    # 🔴 Ajustar nombres EXACTOS como en entrenamiento
-    data.columns = [col.replace("'", "") for col in data.columns]
+    # 🔹 One-hot de smoking_status EXACTO
+    df['smoking_status_formerly smoked'] = (df['smoking_status'] == 'formerly smoked').astype(int)
+    df['smoking_status_never smoked'] = (df['smoking_status'] == 'never smoked').astype(int)
+    df['smoking_status_Unknown'] = (df['smoking_status'] == 'Unknown').astype(int)
+    df['smoking_status_smokes'] = (df['smoking_status'] == 'smokes').astype(int)
 
-    # Crear columnas faltantes
-    for col in variables:
-        if col not in data.columns:
-            data[col] = 0
+    # 🔹 Mantener solo columnas finales
+    df = df[['age', 'avg_glucose_level',
+             'smoking_status_formerly smoked',
+             'smoking_status_never smoked',
+             'smoking_status_Unknown',
+             'smoking_status_smokes',
+             'hypertension_Yes',
+             'heart_disease_Yes',
+             'ever_married_Yes']]
 
-    # Orden correcto de columnas
-    data = data[variables]
+    # 🔹 Escalar
+    X_scaled = scaler.transform(df)
 
-    # Escalar
-    X_scaled = scaler.transform(data)
-
-    # Predecir
+    # 🔹 Predecir
     pred = modelo.predict(X_scaled)
 
-    # Resultado
+    # 🔹 Resultado
     if pred[0] == 1:
         st.error("⚠️ Alto riesgo de ataque cerebrovascular")
     else:
