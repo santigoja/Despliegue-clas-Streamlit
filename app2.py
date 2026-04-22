@@ -20,9 +20,9 @@ import pickle
 filename = 'modelo-class.pkl'
 obj = pickle.load(open(filename, 'rb'))
 modelo = obj[0]
-variables = obj[1]
-scaler = obj[2]
-encoder = obj[3]
+encoder = obj[1]      # probablemente no lo uses
+variables = obj[2]    # columnas correctas
+scaler = obj[3]
 
 #Interfaz gráfica
 #Se crea interfaz gráfica con streamlit para captura de los datos
@@ -41,15 +41,27 @@ smoking_status = st.selectbox('smoking_status', ["'never smoked'", "Unknown","'f
 datos = [[age, avg_glucose_level,hypertension,heart_disease,ever_married, smoking_status]]
 data = pd.DataFrame(datos, columns=['age', 'avg_glucose_level','hypertension','heart_disease','ever_married','smoking_status']) #Dataframe con los mismos nombres de variables
 
+
 if st.button("Predecir"):
-    
-    # Convertir variables categóricas
+
+    # Convertir variables binarias
     data['hypertension'] = data['hypertension'].map({'No':0, 'Yes':1})
     data['heart_disease'] = data['heart_disease'].map({'No':0, 'Yes':1})
     data['ever_married'] = data['ever_married'].map({'No':0, 'Yes':1})
 
-    # Smoking (ejemplo simple, depende de tu modelo ⚠️)
+    # One-hot encoding de smoking_status
     data = pd.get_dummies(data, columns=['smoking_status'])
+
+    # 🔴 Ajustar nombres EXACTOS como en entrenamiento
+    data.columns = [col.replace("'", "") for col in data.columns]
+
+    # Crear columnas faltantes
+    for col in variables:
+        if col not in data.columns:
+            data[col] = 0
+
+    # Orden correcto de columnas
+    data = data[variables]
 
     # Escalar
     X_scaled = scaler.transform(data)
@@ -57,11 +69,10 @@ if st.button("Predecir"):
     # Predecir
     pred = modelo.predict(X_scaled)
 
-    # Mostrar resultado
+    # Resultado
     if pred[0] == 1:
         st.error("⚠️ Alto riesgo de ataque cerebrovascular")
     else:
         st.success("✅ Bajo riesgo")
-        
 # Recordar medida de error del modelo
-st.warning("El modelo tiene un error del 11%")
+st.warning("El modelo no es 100% seguro")
