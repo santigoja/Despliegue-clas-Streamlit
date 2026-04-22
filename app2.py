@@ -51,13 +51,6 @@ if st.button("Predecir"):
     # Smoking (ejemplo simple, depende de tu modelo ⚠️)
     data = pd.get_dummies(data, columns=['smoking_status'])
 
-    # Asegurar columnas (muy importante)
-    for col in variables:
-        if col not in data.columns:
-            data[col] = 0
-
-    data = data[variables]
-
     # Escalar
     X_scaled = scaler.transform(data)
 
