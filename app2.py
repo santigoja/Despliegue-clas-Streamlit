@@ -60,8 +60,8 @@ if st.button("Predecir"):
     pred = modelo.predict(df)
 
     if pred[0] == 1:
-        st.error("⚠️ Alto riesgo de ataque cerebrovascular")
+        st.error("Alto riesgo de ataque cerebrovascular")
     else:
-        st.success("✅ Bajo riesgo de ataque cerebrovascular")
+        st.success("Bajo riesgo de ataque cerebrovascular")
 
-st.warning("⚠️ Este modelo es una herramienta de apoyo y no reemplaza el diagnóstico médico.")
+st.warning("Este modelo es una herramienta de apoyo y no reemplaza el diagnóstico médico.")
